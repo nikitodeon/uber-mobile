@@ -1,11 +1,11 @@
-// import { useAuth } from "@clerk/clerk-expo";
+import { useAuth } from "@clerk/clerk-expo";
 import { Redirect } from "expo-router";
 import { Text, View } from "react-native";
 
 const Page = () => {
-  // const { isSignedIn } = useAuth();
+  const { isSignedIn } = useAuth();
 
-  // if (isSignedIn) return <Redirect href="/(root)/(tabs)/home" />;
+  if (isSignedIn) return <Redirect href="/(root)/(tabs)/home" />;
 
   return (
     // <View className="bg-red-500">
