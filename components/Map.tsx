@@ -133,7 +133,7 @@ const Map = () => {
     <MapView
       provider={PROVIDER_DEFAULT}
       className=" rounded-2xl"
-      style={{ width: "100%", height: 300 }}
+      style={{ width: "100%", height: "100%" }}
       tintColor="black"
       mapType="standard"
       showsPointsOfInterest={false}
