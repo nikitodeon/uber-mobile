@@ -100,7 +100,6 @@ const BookRide = () => {
             rideTime={driverDetails?.time!}
           />
         </>
-        );
       </RideLayout>
     </StripeProvider>
   );
