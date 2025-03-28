@@ -10,6 +10,7 @@ import { images } from "@/constants";
 import { fetchAPI } from "@/lib/fetch";
 import { useLocationStore } from "@/store";
 import { PaymentProps } from "@/types/type";
+import { useEffect } from "react";
 
 const Payment = ({
   fullName,
@@ -27,23 +28,27 @@ const Payment = ({
     destinationAddress,
     destinationLongitude,
   } = useLocationStore();
-
   const { userId } = useAuth();
   const [success, setSuccess] = useState<boolean>(false);
 
   const openPaymentSheet = async () => {
+    console.log("🚀 Opening payment sheet...");
     await initializePaymentSheet();
 
+    console.log("📌 Presenting payment sheet...");
     const { error } = await presentPaymentSheet();
 
     if (error) {
+      console.error("❌ Payment Sheet Error:", error);
       Alert.alert(`Error code: ${error.code}`, error.message);
     } else {
+      console.log("✅ Payment successful!");
       setSuccess(true);
     }
   };
 
   const initializePaymentSheet = async () => {
+    console.log("🛠 Initializing payment sheet...");
     const { error } = await initPaymentSheet({
       merchantDisplayName: "Example, Inc.",
       intentConfiguration: {
@@ -56,13 +61,16 @@ const Payment = ({
           shouldSavePaymentMethod,
           intentCreationCallback
         ) => {
+          console.log(
+            "📝 Confirm Handler Triggered. Creating Payment Intent..."
+          );
+          console.log("💳 Payment Method ID:", paymentMethod.id);
+
           const { paymentIntent, customer } = await fetchAPI(
             "/(api)/(stripe)/create",
             {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 name: fullName || email.split("@")[0],
                 email: email,
@@ -72,12 +80,13 @@ const Payment = ({
             }
           );
 
+          console.log("✅ Payment Intent Created:", paymentIntent);
+
           if (paymentIntent.client_secret) {
+            console.log("🔄 Processing payment...");
             const { result } = await fetchAPI("/(api)/(stripe)/pay", {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 payment_method_id: paymentMethod.id,
                 payment_intent_id: paymentIntent.id,
@@ -86,12 +95,13 @@ const Payment = ({
               }),
             });
 
+            console.log("✅ Payment Processing Response:", result);
+
             if (result.client_secret) {
+              console.log("🚖 Creating ride...");
               await fetchAPI("/(api)/ride/create", {
                 method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   origin_address: userAddress,
                   destination_address: destinationAddress,
@@ -107,9 +117,8 @@ const Payment = ({
                 }),
               });
 
-              intentCreationCallback({
-                clientSecret: result.client_secret,
-              });
+              console.log("✅ Ride Created!");
+              intentCreationCallback({ clientSecret: result.client_secret });
             }
           }
         },
@@ -117,11 +126,27 @@ const Payment = ({
       returnURL: "myapp://book-ride",
     });
 
-    if (!error) {
-      // setLoading(true);
+    if (error) {
+      console.error("❌ Error Initializing Payment Sheet:", error);
     }
   };
+  useEffect(() => {
+    console.log("🔄 Проверяем API /api/stripe/create...");
 
+    fetch("http://192.168.0.106:3000/api/stripe/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "Test User",
+        email: "test@example.com",
+        amount: 5000,
+        paymentMethodId: "pm_1R7NCRIR7eMbw3uv4CnsJtpI",
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => console.log("✅ API Response:", data))
+      .catch((err) => console.error("❌ API Error:", err));
+  }, []);
   return (
     <>
       <CustomButton
@@ -136,16 +161,13 @@ const Payment = ({
       >
         <View className="flex flex-col items-center justify-center bg-white p-7 rounded-2xl">
           <Image source={images.check} className="w-28 h-28 mt-5" />
-
           <Text className="text-2xl text-center font-JakartaBold mt-5">
             Booking placed successfully
           </Text>
-
           <Text className="text-md text-general-200 font-JakartaRegular text-center mt-3">
             Thank you for your booking. Your reservation has been successfully
             placed. Please proceed with your trip.
           </Text>
-
           <CustomButton
             title="Back Home"
             onPress={() => {

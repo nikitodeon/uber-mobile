@@ -1,32 +1,26 @@
-// import { useUser } from "@clerk/clerk-expo";
+import { useUser } from "@clerk/clerk-expo";
 import { ActivityIndicator, FlatList, Image, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// import RideCard from "@/components/RideCard";
+import RideCard from "@/components/RideCard";
 import { images } from "@/constants";
-// import { useFetch } from "@/lib/fetch";
+import { useFetch } from "@/lib/fetch";
 import { Ride } from "@/types/type";
 
 const Rides = () => {
-  // const { user } = useUser();
+  const { user } = useUser();
 
-  // const {
-  //   data: recentRides,
-  //   loading,
-  //   error,
-  // } = useFetch<Ride[]>(`/(api)/ride/${user?.id}`);
+  const {
+    data: recentRides,
+    loading,
+    error,
+  } = useFetch<Ride[]>(`/(api)/ride/${user?.id}`);
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <FlatList
-        data={
-          // recentRides
-          null
-        }
-        renderItem={
-          // ({ item }) => <RideCard ride={item} />
-          null
-        }
+        data={recentRides}
+        renderItem={({ item }) => <RideCard ride={item} />}
         keyExtractor={(item, index) => index.toString()}
         className="px-5"
         keyboardShouldPersistTaps="handled"
@@ -35,7 +29,7 @@ const Rides = () => {
         }}
         ListEmptyComponent={() => (
           <View className="flex flex-col items-center justify-center">
-            {/* {!loading ? (
+            {!loading ? (
               <>
                 <Image
                   source={images.noResult}
@@ -47,7 +41,7 @@ const Rides = () => {
               </>
             ) : (
               <ActivityIndicator size="small" color="#000" />
-            )} */}
+            )}
           </View>
         )}
         ListHeaderComponent={
